@@ -20,8 +20,8 @@ jobs:
       contents: read
 
     env:
-      OXLINT_WARNING_THRESHOLD: 2765
-      OXLINT_ERROR_THRESHOLD: 0
+      OXLINT_WARNING_THRESHOLD: 0
+      OXLINT_ERROR_THRESHOLD: 2621
       ESLINT_WARNING_THRESHOLD: 215
       ESLINT_ERROR_THRESHOLD: 0
       BUILD_WARNING_THRESHOLD: 0
@@ -75,12 +75,12 @@ jobs:
       - name: Run Frontend Linter
         working-directory: ./frontend
         run: |
-          # Keep machine-readable results so the existing warning debt cannot grow.
+          # Keep machine-readable results so the existing lint debt cannot grow.
           pnpm --silent run lint:oxlint:ci > oxlint-results.json || true
 
           pnpm run lint:eslint --format json --output-file lint-results.json || true
 
-      - name: Count Lint Warnings
+      - name: Count Lint Findings
         working-directory: ./frontend
         run: |
           if [ ! -f oxlint-results.json ] || [ ! -f lint-results.json ]; then

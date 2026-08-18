@@ -77,10 +77,6 @@ function shouldReportType(node: ESTree.TSType, environment: TypeEnvironment): bo
 	if (classifyUnsafeDictionary(node, environment) === null) return false;
 	let current: ESTree.Node | null = node.parent;
 	while (current !== null && current.type !== "Program") {
-		// Vendored tailoring: a type-predicate annotation (`value is
-		// Record<string, unknown>`) is a boundary guard's honest output,
-		// not a dictionary contract handed to callers.
-		if (current.type === "TSTypePredicate") return false;
 		if (isTypeNode(current) && classifyUnsafeDictionary(current, environment) !== null)
 			return false;
 		current = current.parent;
