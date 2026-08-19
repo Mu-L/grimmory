@@ -21,7 +21,7 @@ jobs:
 
     env:
       OXLINT_WARNING_THRESHOLD: 0
-      OXLINT_ERROR_THRESHOLD: 2621
+      OXLINT_ERROR_THRESHOLD: 0
       ESLINT_WARNING_THRESHOLD: 215
       ESLINT_ERROR_THRESHOLD: 0
       BUILD_WARNING_THRESHOLD: 0
@@ -75,8 +75,11 @@ jobs:
       - name: Run Frontend Linter
         working-directory: ./frontend
         run: |
-          # Keep machine-readable results so the existing lint debt cannot grow.
-          pnpm --silent run lint:oxlint:ci > oxlint-results.json || true
+          # Oxlint's suppression file contains the existing debt, so this output
+          # contains only new findings or a stale baseline that needs pruning.
+          OXLINT_EXIT_CODE=0
+          pnpm --silent run lint:oxlint:ci > oxlint-results.json || OXLINT_EXIT_CODE=$?
+          echo "OXLINT_EXIT_CODE=${OXLINT_EXIT_CODE}" >> "$GITHUB_ENV"
 
           pnpm run lint:eslint --format json --output-file lint-results.json || true
 
@@ -119,6 +122,10 @@ jobs:
           fi
 
           if [ "${OXLINT_ERROR_COUNT}" -gt "${OXLINT_ERROR_THRESHOLD}" ]; then
+            OXLINT_ERROR_STATUS="FAIL"
+          fi
+
+          if [ "${OXLINT_EXIT_CODE}" -ne 0 ]; then
             OXLINT_ERROR_STATUS="FAIL"
           fi
 
